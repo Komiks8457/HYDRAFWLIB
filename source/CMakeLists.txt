@@ -1,0 +1,4 @@
+add_subdirectory(Common)
+add_subdirectory(HydraDLL)
+add_subdirectory(HydraFramework)
+add_subdirectory(Modules)

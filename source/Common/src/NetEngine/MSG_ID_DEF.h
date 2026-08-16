@@ -1,0 +1,21 @@
+#pragma once
+
+#define CLIENT_REQ_CHAR_READY       0x3537
+#define CLIENT_REQ_CHAR_MOVE        0x7021
+#define CLIENT_REQ_CHAT             0x7025
+#define CLIENT_REQ_INV_UPDATE       0x7034
+#define CLIENT_REQ_SELECT_OBJ       0x7045
+#define CLIENT_REQ_NPC_MENU_OPEN    0x7046
+#define CLIENT_REQ_ITEM_USE         0x704C
+#define CLIENT_REQ_NPC_MENU_CLOSE   0x704B
+#define CLIENT_REQ_MAIN_ACTION      0x7074
+#define CLIENT_REQ_MOUNT_UNMOUNT    0x70CB
+
+#define SERVER_ACK_CHAT             0xB025
+
+#define SERVER_ONLY_REQ             0x353A
+#define SERVER_ONLY_ACK             (SERVER_ONLY_REQ + 0x4000)
+
+#define SERVER_ONLY_REQ_TEST        0xDF
+
+#define MODULE_CERTIFICATION_ACK    0x600D

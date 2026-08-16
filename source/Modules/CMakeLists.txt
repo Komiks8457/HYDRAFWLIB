@@ -1,0 +1,8 @@
+add_subdirectory(AgentServer)
+add_subdirectory(DownloadServer)
+add_subdirectory(FarmManager)
+add_subdirectory(GatewayServer)
+add_subdirectory(GlobalManager)
+add_subdirectory(MachineManager)
+add_subdirectory(SR_GameServer)
+add_subdirectory(SR_ShardManager)
