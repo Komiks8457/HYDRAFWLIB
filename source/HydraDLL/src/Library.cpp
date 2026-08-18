@@ -311,11 +311,11 @@ void CLibrary::DoSomeWork()
         if (!__stringw(szFullPath).endswith(g_ModuleTable[i].exeName))
             continue;
 
-        // 2. Load Vanguard
+        // 1. Init Vanguard
         if (vanguard.load(g_ModuleTable[i].iniPath) && __chkfile(g_ModuleTable[i].dllPath).exists())
         {
             CVanguard::CreateInstance();
-            g_pVanguard->m_dllPath = g_ModuleTable[i].dllPath;
+            g_pVanguard->SetDllPath(g_ModuleTable[i].dllPath);
         }
 
         // 3. Load Addons
@@ -329,7 +329,7 @@ void CLibrary::DoSomeWork()
             }
         }
 
-        // 1. Run Special patches (like SMC or GlobalManager)
+        // 3. Run Special patches (like SMC or GlobalManager)
         if (g_ModuleTable[i].specialPatches)
             g_ModuleTable[i].specialPatches();
     }

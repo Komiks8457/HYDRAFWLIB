@@ -14,12 +14,17 @@ public:
         return true;
     }
 
-    std::wstring m_dllPath;
+    bool InitDll();
+    void SetDllPath(const wchar_t* dllPath) { m_dllPath = dllPath; }
+    HANDLE GetHandle() const { return m_hDll; }
 private:
     CVanguard();
     CVanguard(const CVanguard&);
     CVanguard& operator=(const CVanguard&);
     virtual ~CVanguard();
+
+    std::wstring m_dllPath;
+    HANDLE m_hDll;
 };
 
 #define g_pVanguard (&CVanguard::GetSingleton())

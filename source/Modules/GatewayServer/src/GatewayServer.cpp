@@ -33,7 +33,7 @@ namespace GatewayServer
 
         if (g_pVanguard) {
             // load only if CVanguard was initilized in HydraDLL::CLibrary
-            LoadLibraryW(g_pVanguard->m_dllPath.c_str());
+            g_pVanguard->InitDll();
         }
 
         //return sub_1495B30(0, "GatewayServer", (int)hInstance, (int)lpCmdLine, 1, 0);

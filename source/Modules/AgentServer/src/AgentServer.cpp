@@ -32,7 +32,7 @@ namespace AgentServer
 
         if (g_pVanguard) {
             // load only if CVanguard was initilized in HydraDLL::CLibrary
-            LoadLibraryW(g_pVanguard->m_dllPath.c_str());
+            g_pVanguard->InitDll();
         }
 
         //return sub_466CB0(0, (CHAR *)"AgentServer", hInstance, (int)lpCmdLine, 1, 0);

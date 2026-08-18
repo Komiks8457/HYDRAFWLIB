@@ -32,7 +32,7 @@ namespace DownloadServer
 
         if (g_pVanguard) {
             // load only if CVanguard was initilized in HydraDLL::CLibrary
-            LoadLibraryW(g_pVanguard->m_dllPath.c_str());
+            g_pVanguard->InitDll();
         }
 
         //return sub_14507F0(0, "DownloadServer", (int)hInstance, (int)lpCmdLine, 1, 0);

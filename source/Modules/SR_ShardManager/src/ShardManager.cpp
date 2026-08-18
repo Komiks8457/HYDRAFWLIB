@@ -33,7 +33,7 @@ namespace ShardManager
 
         if (g_pVanguard) {
             // load only if CVanguard was initilized in HydraDLL::CLibrary
-            LoadLibraryW(g_pVanguard->m_dllPath.c_str());
+            g_pVanguard->InitDll();
         }
 
         //return sub_9D8E90(0, (CHAR *)"SR_ShardManager", hInstance, (int)lpCmdLine, 1, 0);

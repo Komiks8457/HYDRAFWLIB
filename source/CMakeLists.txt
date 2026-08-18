@@ -1,3 +1,4 @@
+add_subdirectory(APEX)
 add_subdirectory(Common)
 add_subdirectory(HydraDLL)
 add_subdirectory(HydraFramework)
