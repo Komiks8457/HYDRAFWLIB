@@ -18,7 +18,7 @@ C:/silkroad/
 │   └── ...
 ├── GlobalManager.exe
 ├── hydrafwlib.dll
-└── SR_GameServer.exe
+├── SR_GameServer.exe
 └── ...
 ```
 
