@@ -1,5 +1,4 @@
 #include "Vanguard.h"
-
 #include "AppLogger.h"
 
 template<> CVanguard* CSingletonT<CVanguard>::s_pObject = NULL;
