@@ -41,6 +41,9 @@ namespace MachineManager
         // CMachineManager vftable hooks
         MEMUTIL_VFTABLE_HOOK(0x01564B24,  1, &CMachineManager::init_module);
         MEMUTIL_VFTABLE_HOOK(0x01564B24, 11, &CMachineManager::init_localdata);
+
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x014C425C, HydraFramework::NO_ENDLESS_LOOP_DUMP);
     }
 
     BOOL CMachineManager::init_module()

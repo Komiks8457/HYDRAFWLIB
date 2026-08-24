@@ -59,6 +59,9 @@ namespace GameServer
         // ValidateMsg hook
         MEMUTIL_REPLACE_OFFSET(0x00BC9F47, &CGameServer::check_valid_msgid);
 
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x00BF830C, HydraFramework::NO_ENDLESS_LOOP_DUMP);
+
         // Static Patches
         MEMUTIL_WRITE_VALUE(BYTE, 0x00902673 + 1, (BYTE)0xC8); //MOB_THIEF
         MEMUTIL_WRITE_VALUE(BYTE, 0x00902787 + 2, (BYTE)0xC7); //MOB_THIEF

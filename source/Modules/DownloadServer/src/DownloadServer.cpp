@@ -56,6 +56,9 @@ namespace DownloadServer
 
         // ValidateMsg hook
         MEMUTIL_REPLACE_OFFSET(0x0144D7A7, &CDownloadServer::check_valid_msgid);
+
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x0147B6EC, HydraFramework::NO_ENDLESS_LOOP_DUMP);
     }
 
     BOOL CDownloadServer::init_module()

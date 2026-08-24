@@ -63,6 +63,14 @@ namespace HydraFramework
 
         ServerInfo m_ServerInfo;
     };
+
+    inline __declspec(naked) int NO_ENDLESS_LOOP_DUMP()
+    {
+        __asm {
+            xor eax, eax;
+            ret 4;
+        }
+    }
 }
 
 using namespace HydraFramework;

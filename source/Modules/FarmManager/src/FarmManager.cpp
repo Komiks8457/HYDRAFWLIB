@@ -55,6 +55,9 @@ namespace FarmManager
         MEMUTIL_VFTABLE_HOOK(0x01529BE4,  1, &CFarmManager::init_module);
         MEMUTIL_VFTABLE_HOOK(0x01529BE4, 11, &CFarmManager::init_localdata);
 
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x0148889C, HydraFramework::NO_ENDLESS_LOOP_DUMP);
+
         // Other hooks
         CMainProcess::SetupHook();
     }

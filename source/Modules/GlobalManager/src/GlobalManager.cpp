@@ -56,6 +56,9 @@ namespace GlobalManager
         // ValidateMsgID hook
         MEMUTIL_REPLACE_OFFSET(0x0172C017, &CGlobalManager::check_valid_msgid);
 
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x0175C3AC, HydraFramework::NO_ENDLESS_LOOP_DUMP);
+
         // Other hooks
         CMainProcess::SetupHook();
     }

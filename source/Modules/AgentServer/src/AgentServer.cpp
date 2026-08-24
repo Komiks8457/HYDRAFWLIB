@@ -56,6 +56,9 @@ namespace AgentServer
 
         // ValidateMsgID hook
         MEMUTIL_REPLACE_OFFSET(0x0046F527, &CAgentServer::check_valid_msgid);
+
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x0048EDBC, HydraFramework::NO_ENDLESS_LOOP_DUMP);
     }
 
     BOOL CAgentServer::init_module()

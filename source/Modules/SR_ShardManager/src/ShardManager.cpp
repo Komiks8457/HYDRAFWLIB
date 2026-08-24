@@ -54,6 +54,9 @@ namespace ShardManager
         // ValidateMsgID hook
         MEMUTIL_REPLACE_OFFSET(0x009F15F7, &CShardManager::check_valid_msgid);
 
+        // Disable ENDLESS_LOOP dump
+        MEMUTIL_SETUP_HOOK(LongCall, 0x00A0B4FC, HydraFramework::NO_ENDLESS_LOOP_DUMP);
+
         // CShardManager vftable hooks
         MEMUTIL_VFTABLE_HOOK(0x00B560EC,  1, &CShardManager::init_module);
         MEMUTIL_VFTABLE_HOOK(0x00B560EC, 11, &CShardManager::init_localdata);
