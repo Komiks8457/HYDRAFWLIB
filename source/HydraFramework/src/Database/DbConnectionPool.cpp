@@ -3,7 +3,8 @@
 
 namespace HydraFramework
 {
-    CDbConnectionPool::CDbConnectionPool() : m_nMaxConnections(0), m_nMinConnections(0), m_nCurrentTotal(0)
+    CDbConnectionPool::CDbConnectionPool()
+        : m_nMaxConnections(0), m_nMinConnections(0), m_nCurrentTotal(0)
     {}
 
     CDbConnectionPool::~CDbConnectionPool()
@@ -19,21 +20,40 @@ namespace HydraFramework
         m_nMaxConnections = nMaxConn;
         m_nMinConnections = nMinConn;
 
+        // Use a local temporary vector so the analyzer can easily track ownership
+        std::vector<CDbConnection*> tempPool;
+
         // Pre-allocate the minimum number of connections
         for (int i = 0; i < m_nMinConnections; ++i)
         {
-            CDbConnection* pConn = CreateNewConnection();
-            if (pConn)
+            CDbConnection* pConn = new CDbConnection(m_strConnStr);
+
+            if (pConn->Connect())
             {
-                m_idlePool.push_back(pConn);
+                m_nCurrentTotal++;
+                tempPool.push_back(pConn);
             }
             else
             {
-                // If we can't even start the minimum, initialization fails
+                delete pConn;
+
+                for (size_t j = 0; j < tempPool.size(); ++j)
+                {
+                    if (tempPool[j])
+                    {
+                        tempPool[j]->Disconnect();
+                        delete tempPool[j];
+                        m_nCurrentTotal--;
+                    }
+                }
+
+                tempPool.clear();
                 return false;
             }
         }
 
+        // Assign the successfully built pool to m_idlePool
+        m_idlePool = tempPool;
         return true;
     }
 
@@ -47,8 +67,6 @@ namespace HydraFramework
             CDbConnection* pConn = m_idlePool.back();
             m_idlePool.pop_back();
 
-            // Optional: Add a "Ping" check here if your driver supports it
-            // to ensure the connection hasn't timed out on the SQL side.
             if (pConn) return pConn;
         }
 
@@ -59,8 +77,6 @@ namespace HydraFramework
         }
 
         // 3. Pool is exhausted and at Max limit
-        // In a real server, you might wait here, but for SRO logic, returning NULL
-        // allows the caller to log an error or retry.
         return NULL;
     }
 
@@ -76,7 +92,7 @@ namespace HydraFramework
 
     CDbConnection* CDbConnectionPool::CreateNewConnection()
     {
-        // Note: We don't lock here because this is called by functions already holding the lock
+        // Note: Called by functions already holding the lock
         CDbConnection* pNewConn = new CDbConnection(m_strConnStr);
 
         if (pNewConn->Connect())
@@ -92,8 +108,12 @@ namespace HydraFramework
     void CDbConnectionPool::Shutdown()
     {
         ACS_SCOPED_LOCK(m_cs);
+        Shutdown_NoLock();
+    }
 
-        // Delete all idle connections
+    void CDbConnectionPool::Shutdown_NoLock()
+    {
+        // Delete all idle connections without locking again
         for (size_t i = 0; i < m_idlePool.size(); ++i)
         {
             if (m_idlePool[i])

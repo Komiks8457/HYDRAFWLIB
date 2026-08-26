@@ -102,12 +102,12 @@ void ShowConsole(bool showConsole, const char* name)
     _snprintf(title, sizeof(title), "%s - HydraFramework (%s)", name, BUILD_REVISION_STRING);
     _snprintf(banner, sizeof(banner), "Hydra-%s", name);
 
-    if (AllocConsole() && showConsole)
+    if (showConsole && AllocConsole())
     {
         SetConsoleTitleA(title);
         SetConsoleOutputCP(65001);
         freopen("CONOUT$", "w+", stdout);
-        //ConsoleBanner(banner);
+        CAppLogger::ConsoleEnable(showConsole);
     }
 }
 

@@ -128,38 +128,21 @@ namespace FarmManager
             return FALSE;
         }
 
-        bool foundAny = false;
+        std::vector<WORD> serverBodyList = g_pHFW->m_ServerInfo.GetServerBodyIDByModuleName(pName);
 
-        ServerInfo::iterator it = g_pHFW->m_ServerInfo.begin();
-        ServerInfo::iterator endIt = g_pHFW->m_ServerInfo.end();
-
-        for (; it != endIt; ++it)
-        {
-            // Iterate through the ServerBody map inside sServerInfo
-            ServerBody::iterator bodyIt = it->second.ServerBodyMap.begin();
-            ServerBody::iterator bodyEnd = it->second.ServerBodyMap.end();
-
-            for (; bodyIt != bodyEnd; ++bodyIt)
-            {
-                if (bodyIt->second.Name != pName)
-                    continue;
-
-                int bodyID = static_cast<int>(bodyIt->second.ID);
-
-                if (!reinterpret_stdcall(0x01450EF0, char, bodyID, pMsg))
-                {
-                    PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", bodyID, pMsg->GetMsgID());
-                    return FALSE;
-                }
-
-                foundAny = true;
-            }
+        if (serverBodyList.empty()) {
+            PutLog(FATAL, "%s(): pName(%s) not found", __FUNCTION__, pName);
+            return FALSE;
         }
 
-        if (!foundAny)
+        for (std::vector<WORD>::const_iterator it = serverBodyList.begin(); it != serverBodyList.end(); ++it)
         {
-            PutLog(FATAL, "Unknown module %s", pName);
-            return FALSE;
+            int serverBodyID = static_cast<int>(*it);
+            if (!reinterpret_stdcall(0x01450EF0, char, serverBodyID, pMsg))
+            {
+                PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", serverBodyID, pMsg->GetMsgID());
+                return FALSE;
+            }
         }
 
         return TRUE;

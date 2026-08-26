@@ -17,7 +17,7 @@ namespace HydraFramework
         friend class CHydraProcess;
     public:
         int InitDB(const std::string& ini);
-        int InitDB(DbConnStringInfo* dbInfo);
+        int InitDB(const sDbConfigs& dbInfo);
 
         // Original style accessors
         CDbInstance& GetInstance(DbType type);

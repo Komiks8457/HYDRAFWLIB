@@ -6,8 +6,9 @@ namespace HydraFramework
     {
         if (nMaxLen <= 0) return;
         ACS_SCOPED_LOCK(m_cs);
-        SQLLEN cb;
-        str.resize(nMaxLen);
+        SQLLEN cb = 0;
+
+        str.resize(nMaxLen + 1);
         SQLRETURN ret = ::SQLGetData(m_hStmt, m_nColID++, SQL_C_CHAR,
                                      &str[0], nMaxLen + 1, &cb);
         if (cb == SQL_NULL_DATA || ret == SQL_ERROR)
@@ -15,8 +16,15 @@ namespace HydraFramework
             str.clear();
             return;
         }
-        if (cb >= 0 && cb < nMaxLen)
-            str.resize(cb);
+
+        if (cb > 0)
+        {
+            str.resize(cb < nMaxLen ? cb : nMaxLen);
+        }
+        else
+        {
+            str.clear();
+        }
     }
 
     void CDbRowReader::ReadString(char* pDest, int nMaxLen)

@@ -21,8 +21,8 @@ void TriggerHydraInit()
 
     if (InterlockedCompareExchange(&HydraInitState, 1, 0) == 0)
     {
-        CLibrary::DoSomeWork();
         HydraInitState = 2;
+        CLibrary::DoSomeWork();
     }
 }
 
@@ -62,14 +62,14 @@ BOOL APIENTRY DllMain(HMODULE hInst, const DWORD ul_reason_for_call, LPVOID lpRe
     {
         case DLL_PROCESS_ATTACH:
             DisableThreadLibraryCalls(hMyModule);
-            //MEMUTIL_HOOK_FN(TrueAllocConsole, MyAllocConsole)
+            MEMUTIL_HOOK_FN(TrueAllocConsole, MyAllocConsole)
             MEMUTIL_HOOK_FN(TrueGetCommandLineA, MyGetCommandLineA)
             MEMUTIL_HOOK_FN(TrueGetCommandLineW, MyGetCommandLineW)
             break;
         case DLL_PROCESS_DETACH:
             if (lpReserved == NULL)
             {
-                //MEMUTIL_UNHOOK(TrueAllocConsole, MyAllocConsole)
+                MEMUTIL_UNHOOK(TrueAllocConsole, MyAllocConsole)
                 MEMUTIL_UNHOOK(TrueGetCommandLineA, MyGetCommandLineA)
                 MEMUTIL_UNHOOK(TrueGetCommandLineW, MyGetCommandLineW)
             }

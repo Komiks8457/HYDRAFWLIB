@@ -211,13 +211,13 @@ struct sSlotInfo
 };
 #pragma pack(pop)
 
-struct DbConnStringInfo
+struct sDbConfigs
 {
-    const char* ACCOUNT;
-    const char* SHARD;
-    const char* LOG;
+    std::string ACCOUNT;
+    std::string SHARD;
+    std::string LOG;
 
-    DbConnStringInfo() : ACCOUNT(NULL), SHARD(NULL), LOG(NULL)
+    sDbConfigs() : ACCOUNT(""), SHARD(""), LOG("")
     {}
 };
 

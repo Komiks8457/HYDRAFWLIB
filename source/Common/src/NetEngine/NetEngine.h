@@ -49,62 +49,67 @@ struct IBSNet : public IUnknownInterface
 struct NETENGINE_CONFIG
 {};
 
-class CNetEngine : public IBSNet
-{
+class CNetEngine : public IBSNet {
 public:
-    static bool Initialize(uintptr_t ptr);
-    CMsg* __stdcall NewMsg_IMPL(WORD wMsgID, bool IsEncrypted);
-    CMsg* __stdcall NewMsgFrom_IMPL(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted);
-    void  __stdcall DelMsg_IMPL(CMsg* pMsg);
-    NERR  __stdcall SendMsg_IMPL(DWORD dwSessionID, CMsg *pMsg);
+    static bool Initialize(CNetEngine* pNetEngine);
+    CMsg* NewMsg_IMPL(WORD wMsgID, bool IsEncrypted);
+    CMsg* NewMsgFrom_IMPL(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted);
+    void  DelMsg_IMPL(CMsg* pMsg);
+    NERR  SendMsg_IMPL(DWORD dwSessionID, CMsg *pMsg);
+
+    BOOL  GetMacAddress_IMPL(DWORD dwSession, BYTE *pAddress);
+    BOOL  DisplayVersion_IMPL();
 
 private:
     virtual ~CNetEngine() = 0;
     virtual HRESULT __stdcall QueryInterface(const IID& iid, void** ppv) = 0;
     virtual ULONG   __stdcall AddRef() = 0;
     virtual ULONG   __stdcall Release() = 0;
-
-    virtual BOOL     __stdcall Create(NETENGINE_CONFIG &config) = 0;
-    virtual BOOL     __stdcall DummyFunc_04(BOOL a2, BOOL a3, BOOL a4, BOOL a5) = 0;
-    virtual BOOL     __stdcall Connect(LPCWSTR lpszAddrConnect, WORD nPort, LPCWSTR lpszAddrBind, DWORD dwTaskToBind, BOOL bKeepAlive) = 0;
-    virtual BOOL     __stdcall DummyFunc_06() = 0;
-    virtual BOOL     __stdcall DummyFunc_07() = 0;
-    virtual BOOL     __stdcall DummyFunc_08() = 0;
-    virtual BOOL     __stdcall DummyFunc_09() = 0;
-    virtual BOOL     __stdcall DummyFunc_10() = 0;
-    virtual BOOL     __stdcall DummyFunc_11() = 0;
-    virtual BOOL     __stdcall DummyFunc_12() = 0;
-    virtual BOOL     __stdcall DummyFunc_13() = 0;
-    virtual BOOL     __stdcall DummyFunc_14() = 0;
-    virtual BOOL     __stdcall DummyFunc_15() = 0;
-    virtual BOOL     __stdcall DummyFunc_16() = 0;
-    virtual BOOL     __stdcall DummyFunc_17() = 0;
+    virtual BOOL    __stdcall Create(NETENGINE_CONFIG &config) = 0;
+    virtual BOOL    __stdcall DummyFunc_04(BOOL a2, BOOL a3, BOOL a4, BOOL a5) = 0;
+    virtual BOOL    __stdcall Connect(LPCWSTR lpszAddrConnect, WORD nPort, LPCWSTR lpszAddrBind, DWORD dwTaskToBind, BOOL bKeepAlive) = 0;
+    virtual BOOL    __stdcall DummyFunc_06() = 0;
+    virtual BOOL    __stdcall DummyFunc_07() = 0;
+    virtual BOOL    __stdcall DummyFunc_08() = 0;
+    virtual BOOL    __stdcall DummyFunc_09() = 0;
+    virtual BOOL    __stdcall DummyFunc_10() = 0;
+    virtual BOOL    __stdcall DummyFunc_11() = 0;
+    virtual BOOL    __stdcall DummyFunc_12() = 0;
+    virtual BOOL    __stdcall DummyFunc_13() = 0;
+    virtual BOOL    __stdcall DummyFunc_14() = 0;
+    virtual BOOL    __stdcall DummyFunc_15() = 0;
+    virtual BOOL    __stdcall DummyFunc_16() = 0;
+    virtual BOOL    __stdcall DummyFunc_17() = 0;
     virtual CMsg*   __stdcall NewMsg(bool bEncrypt) = 0; //18
     virtual CMsg*   __stdcall NewMsgFrom(const char* szFile, BOOL nLine, const char* szFnName, bool bEncrypt) = 0; //19
     virtual void    __stdcall DelMsg(CMsg* pMsg) = 0; //20
-    virtual BOOL     __stdcall DummyFunc_21() = 0;
+    virtual BOOL    __stdcall DummyFunc_21() = 0;
     virtual NERR    __stdcall SendMsg(DWORD dwSession, CMsg* pMsg) = 0; //22
-    virtual BOOL     __stdcall DummyFunc_23() = 0;
-    virtual BOOL     __stdcall DummyFunc_24() = 0;
-    virtual BOOL     __stdcall DummyFunc_25() = 0;
-    virtual BOOL     __stdcall DummyFunc_26() = 0;
-    virtual BOOL     __stdcall DummyFunc_27() = 0;
-    virtual BOOL     __stdcall DummyFunc_28() = 0;
-    virtual BOOL     __stdcall DummyFunc_29() = 0;
-    virtual BOOL     __stdcall DummyFunc_30() = 0;
-    virtual BOOL     __stdcall DummyFunc_31() = 0;
-    virtual BOOL     __stdcall DummyFunc_32() = 0;
-    virtual BOOL     __stdcall DummyFunc_33() = 0;
-    virtual BOOL     __stdcall DummyFunc_34() = 0;
-    virtual BOOL     __stdcall DummyFunc_35() = 0;
+    virtual BOOL    __stdcall DummyFunc_23() = 0;
+    virtual BOOL    __stdcall DummyFunc_24() = 0;
+    virtual BOOL    __stdcall DummyFunc_25() = 0;
+    virtual BOOL    __stdcall DummyFunc_26() = 0;
+    virtual BOOL    __stdcall DummyFunc_27() = 0;
+    virtual BOOL    __stdcall DummyFunc_28() = 0;
+    virtual BOOL    __stdcall DummyFunc_29() = 0;
+    virtual BOOL    __stdcall DummyFunc_30() = 0;
+    virtual BOOL    __stdcall DummyFunc_31() = 0;
+    virtual BOOL    __stdcall DummyFunc_32() = 0;
+    virtual BOOL    __stdcall DummyFunc_33() = 0;
+    virtual BOOL    __stdcall DummyFunc_34() = 0;
+    virtual BOOL    __stdcall DummyFunc_35() = 0;
     virtual BOOL    __stdcall GetMacAddress(DWORD dwSession, BYTE* pAddress) = 0; //36
-    virtual BOOL     __stdcall DummyFunc_37() = 0;
-    virtual void    __stdcall DisplayVersion() = 0; //38
-    virtual BOOL     __stdcall DummyFunc_39() = 0;
-    virtual BOOL     __stdcall DummyFunc_40() = 0;
-    virtual BOOL     __stdcall DummyFunc_41() = 0;
-    virtual BOOL     __stdcall DummyFunc_42() = 0;
+    virtual BOOL    __stdcall DummyFunc_37() = 0;
+    virtual void    __stdcall DisplayVersion(int a1) = 0; //38
+    virtual BOOL    __stdcall DummyFunc_39() = 0;
+    virtual BOOL    __stdcall DummyFunc_40() = 0;
+    virtual BOOL    __stdcall DummyFunc_41() = 0;
+    virtual BOOL    __stdcall DummyFunc_42() = 0;
     virtual void    __stdcall RegisterMaxConnections(int, int) = 0;
+
+//--------------------------------------------------------------------
+    typedef std::map<int, DWORD> vfTableMap;
+    static vfTableMap m_vftableMap;
 };
 
 extern CNetEngine *g_pNetEngine;

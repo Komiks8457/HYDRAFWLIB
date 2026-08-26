@@ -6,6 +6,7 @@
 CAppLogger::pfnLogWriter CAppLogger::m_pfnLogWriter = NULL;
 bool CAppLogger::m_Initialized = FALSE;
 bool CAppLogger::m_OutputLogs = FALSE;
+bool CAppLogger::m_ConsoleEnabled = FALSE;
 
 void CAppLogger::SetupHook(unsigned int dwAddr)
 {
@@ -24,7 +25,7 @@ char CAppLogger::WriteLog(E_LOG_MSG_TYPE Type, const char* format, ...)
     if (__stringa(logmsg).endswith("was initialized successfully") && !m_Initialized)
         m_Initialized = TRUE;
 
-    if (m_OutputLogs)
+    if (m_ConsoleEnabled && m_OutputLogs)
     {
         switch (Type) {
             case NORMAL:

@@ -27,7 +27,7 @@ namespace AgentServer
 
     BOOL CMainProcess::HandleMsg(CMsg *pMsg, DWORD a3, LPVOID a4, CMassiveMsg *pMassiveMsg)
     {
-        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 1024)
+        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 64)
             CustomMsg(pMsg, NULL, NULL, NULL);
 
         return reinterpret_thiscall(0x00428830, BOOL, this, pMsg, a3, a4, pMassiveMsg);
@@ -42,209 +42,196 @@ namespace AgentServer
         WORD wMsgID = pMsg->GetMsgID();
 
         switch (wMsgID) {
-                case MODULE_CERTIFICATION_ACK: {
-                    if (pMsg->GetMsgSize() > 1024)
-                    {
-                        BYTE listMarker = 0;
-                        ServerBody tempServerBodies;
-                        Division tempDivisions;
-                        Shard tempShards;
+            case MODULE_CERTIFICATION_ACK: { //0x600D
+                if (pMsg->GetMsgSize() > 64)
+                {
+                    BYTE listMarker = 0;
 
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break; // End of list marker
-                            if (flag == 1) {
-                                sServerBody body;
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break; // End of list marker
+                        if (flag == 1) {
+                            sServerBody body;
 
-                                body.DivisionID = pMsg->Read<BYTE>(); //divisionID, not used
-                                pMsg->Read<BYTE>(); //farmID, not used
-                                BYTE randomJunkCount = pMsg->Read<BYTE>();
-                                BYTE moduleID = pMsg->Read<BYTE>();
-                                body.ID = pMsg->Read<WORD>();
-                                pMsg->Read<BYTE>(); //moduleType, not used
+                            body.DivisionID = pMsg->Read<BYTE>();
+                            body.FarmID = pMsg->Read<BYTE>();
+                            BYTE randomJunkCount = pMsg->Read<BYTE>();
+                            body.ModuleID = pMsg->Read<BYTE>();
+                            body.ID = pMsg->Read<WORD>();
+                            body.ModuleType = pMsg->Read<BYTE>();
 
-                                // Skip random junk bytes loop
-                                for (int i = 0; i < randomJunkCount % 5; i++) {
-                                    pMsg->Read<BYTE>();
-                                }
-
-                                pMsg->Read<WORD>(); //certifierID, not used
-                                pMsg->Read<WORD>(); //listenerPort, not used
-                                body.ShardID = pMsg->Read<WORD>(); //shardID, not used
-                                pMsg->Read<DWORD>(); //machineID, not used
-                                pMsg->Read<DWORD>(); //state, not used
-
-                                if (moduleID != 0)
-                                    tempServerBodies[moduleID] = body;
+                            // Skip random junk bytes loop
+                            for (int i = 0; i < randomJunkCount % 5; i++) {
+                                pMsg->Read<BYTE>();
                             }
+
+                            body.CertifyID = pMsg->Read<WORD>();
+                            body.ListenerPort = pMsg->Read<WORD>();
+                            body.ShardID = pMsg->Read<WORD>();
+                            body.MachineID = pMsg->Read<DWORD>();
+                            body.State = pMsg->Read<DWORD>();
+
+                            g_pHFW->m_ServerInfo.ServerBodyMap[body.ID] = body;
                         }
-
-                        // 2. Parse Modules
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                BYTE modId = pMsg->Read<BYTE>();
-                                std::string modName;
-                                pMsg->Read(modName);
-                                ServerBody::iterator it = tempServerBodies.find(modId);
-                                if (it != tempServerBodies.end()) {
-                                    it->second.Name = modName;
-                                }
-                            }
-                        }
-
-                        // 3. Parse Content
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                pMsg->Read<BYTE>(); //contentID, not used
-                                pMsg->ReadStringA(); //contentName, not used
-                            }
-                        }
-
-                        // 4. Parse Divisions
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                sDivision div;
-
-                                div.ID = pMsg->Read<BYTE>();
-                                pMsg->Read<WORD>();
-                                pMsg->Read(div.Name);
-                                pMsg->Read(div.DbConfigAccount);
-
-                                tempDivisions[div.ID] = div;
-                            }
-                        }
-
-                        // 5. Parse FarmContent
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                pMsg->Read<BYTE>(); //farmID, not used
-                                pMsg->Read<BYTE>(); //contentID, not used
-                            }
-                        }
-
-                        // 6. Parse Farms
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                pMsg->Read<BYTE>(); //farmID, not used
-                                pMsg->Read<BYTE>(); //divisionID, not used
-                                pMsg->ReadStringA(); //farmName, not used
-                                pMsg->ReadStringA(); //dbConfig, not used
-                            }
-                        }
-
-                        // 7. Parse ServerMachines
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                pMsg->Read<DWORD>(); //machineId, not used
-                                pMsg->Read<BYTE>(); //divisionId, not used
-                                pMsg->ReadStringA(); //name, not used
-                                pMsg->ReadStringA(); //publicIp, not used
-                                pMsg->ReadStringA(); //privateIp, not used
-                                pMsg->Read<WORD>(); //zeroVal, not used
-                                pMsg->Read<WORD>(); //managerBodyId, not used
-                            }
-                        }
-
-                        // 8. Parse ServerCords
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                pMsg->Read<DWORD>(); //cordId, not used
-                                pMsg->Read<WORD>(); //outletId, not used
-                                BYTE randomJunkByte0 = pMsg->Read<BYTE>();
-                                pMsg->Read<WORD>(); //inletId, not used
-                                pMsg->Read<DWORD>(); //state, not used
-                                pMsg->Read<BYTE>(); //bindType, not used
-                                pMsg->Read<DWORD>(); //sessionId, not used
-
-                                if (randomJunkByte0 % 7 == 0) {
-                                    pMsg->Read<BYTE>();
-                                }
-                            }
-                        }
-
-                        // 9. Parse Shards
-                        pMsg->Read(listMarker);
-                        while (true) {
-                            BYTE flag = pMsg->Read<BYTE>();
-                            if (flag == 2) break;
-                            if (flag == 1) {
-                                sShard shard;
-                                shard.ID = pMsg->Read<WORD>();
-                                pMsg->Read<WORD>(); //maxUser, not used
-                                pMsg->Read<WORD>(); //manageBodyID, not used
-                                pMsg->Read<BYTE>(); //contentID, not used
-                                pMsg->Read(shard.Name);
-                                pMsg->Read(shard.DbConfigShard);
-                                pMsg->Read(shard.DbConfigLog);
-                                pMsg->Read<BYTE>(); //farmID, not used
-                                pMsg->Read<BYTE>(); //shardService, not used
-                                pMsg->Read<WORD>(); //currentUser, not used
-
-                                tempShards[shard.ID] = shard;
-                            }
-                        }
-
-                        // ==========================================
-                        // 10. Populate m_ServerInfo Map
-                        // ==========================================
-                        g_pHFW->m_ServerInfo.clear();
-
-                        ServerBody::iterator itBody = tempServerBodies.begin();
-                        ServerBody::iterator endBody = tempServerBodies.end();
-                        for (; itBody != endBody; ++itBody)
-                        {
-                            WORD modId = itBody->first;
-                            const sServerBody& body = itBody->second;
-
-                            sServerInfo serverInfo;
-
-                            // Populate ServerBody map inside sServerInfo
-                            serverInfo.ServerBodyMap[modId] = body;
-
-                            // Bind matching Division if present
-                            Division::iterator itDiv = tempDivisions.find(body.DivisionID);
-                            if (itDiv != tempDivisions.end()) {
-                                serverInfo.DivisionMap[itDiv->first] = itDiv->second;
-                            }
-
-                            // Bind matching Shard if present
-                            Shard::iterator itShard = tempShards.find(body.ShardID);
-                            if (itShard != tempShards.end()) {
-                                serverInfo.ShardMap[itShard->first] = itShard->second;
-                            }
-
-                            g_pHFW->m_ServerInfo[modId] = serverInfo;
-                        }
-
-                        pMsg->ResetPos();
-
-                        // *DO NOT DELETE*
-                        return TRUE;
                     }
-                    break;
+
+                    // 2. Parse Modules
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sModule module;
+
+                            module.ID = pMsg->Read<BYTE>();
+                            pMsg->Read(module.Name);
+
+                            g_pHFW->m_ServerInfo.ModuleMap[module.ID] = module;
+                        }
+                    }
+
+                    // 3. Parse Content
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sContent content;
+
+                            content.ID = pMsg->Read<BYTE>();
+                            pMsg->Read(content.Name);
+
+                            g_pHFW->m_ServerInfo.ContentMap[content.ID] = content;
+                        }
+                    }
+
+                    // 4. Parse Divisions
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sDivision div;
+
+                            div.ID = pMsg->Read<BYTE>();
+                            div.ManagerID = pMsg->Read<WORD>();
+                            pMsg->Read(div.Name);
+                            pMsg->Read(div.DbConfigAccount);
+
+                            g_pHFW->m_ServerInfo.DivisionMap[div.ID] = div;
+                        }
+                    }
+
+                    // 5. Parse FarmContent
+                    pMsg->Read(listMarker);
+                    BYTE index = 0;
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sFarmContent farm;
+
+                            farm.nID = index;
+                            farm.FarmID = pMsg->Read<BYTE>();
+                            farm.ContentID = pMsg->Read<BYTE>();
+
+                            g_pHFW->m_ServerInfo.FarmContentMap[index] = farm;
+                        }
+                        index++;
+                    }
+
+                    // 6. Parse Farms
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sFarm farm;
+
+                            farm.ID = pMsg->Read<BYTE>();
+                            farm.DivisionID = pMsg->Read<BYTE>();
+                            pMsg->Read(farm.Name);
+                            pMsg->Read(farm.DbConfig);
+
+                            g_pHFW->m_ServerInfo.FarmMap[farm.ID] = farm;
+                        }
+                    }
+
+                    // 7. Parse ServerMachines
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sServerMachine server;
+
+                            server.ID = pMsg->Read<DWORD>();
+                            server.DivisionID = pMsg->Read<BYTE>();
+                            pMsg->Read(server.Name);
+                            pMsg->Read(server.PublicIP);
+                            pMsg->Read(server.PrivateIP);
+                            pMsg->Read<WORD>(); //zeroVal, not used
+                            server.ManagerID = pMsg->Read<WORD>();
+
+                            g_pHFW->m_ServerInfo.ServerMachineMap[server.ID] = server;
+                        }
+                    }
+
+                    // 8. Parse ServerCords
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sServerCord serverCord;
+
+                            serverCord.ID = pMsg->Read<DWORD>(); //cordId, not used
+                            serverCord.OutletID = pMsg->Read<WORD>(); //outletId, not used
+                            BYTE randomJunkByte0 = pMsg->Read<BYTE>();
+                            serverCord.InletID = pMsg->Read<WORD>(); //inletId, not used
+                            serverCord.State = pMsg->Read<DWORD>(); //state, not used
+                            serverCord.BindType = pMsg->Read<BYTE>(); //bindType, not used
+                            serverCord.SessionID = pMsg->Read<DWORD>(); //sessionId, not used
+
+                            g_pHFW->m_ServerInfo.ServerCordMap[serverCord.ID] = serverCord;
+
+                            if (randomJunkByte0 % 7 == 0) {
+                                pMsg->Read<BYTE>();
+                            }
+                        }
+                    }
+
+                    // 9. Parse Shards
+                    pMsg->Read(listMarker);
+                    while (true) {
+                        BYTE flag = pMsg->Read<BYTE>();
+                        if (flag == 2) break;
+                        if (flag == 1) {
+                            sShard shard;
+
+                            shard.ID = pMsg->Read<WORD>();
+                            shard.MaxUser = pMsg->Read<WORD>();
+                            shard.ManagerID = pMsg->Read<WORD>();
+                            shard.ContentID = pMsg->Read<BYTE>();
+                            pMsg->Read(shard.Name);
+                            pMsg->Read(shard.DbConfigShard);
+                            pMsg->Read(shard.DbConfigLog);
+                            shard.FarmID = pMsg->Read<BYTE>();
+                            shard.ShardService = pMsg->Read<BYTE>();
+                            shard.CurrentUsers = pMsg->Read<WORD>();
+
+                            g_pHFW->m_ServerInfo.ShardMap[shard.ID] = shard;
+                        }
+                    }
+
+                    pMsg->ResetPos();
+
+                    // *DO NOT DELETE*
+                    return TRUE;
                 }
+                break;
+            }
             case SERVER_ONLY_REQ: {
                 //TODO
                 break;

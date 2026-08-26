@@ -23,11 +23,13 @@ public:
     static char WriteLog(E_LOG_MSG_TYPE Type, const char* format, ...);
     static bool Initialized() { return m_Initialized; }
     static void OutputLogs(bool enable) { m_OutputLogs = enable; }
+    static void ConsoleEnable(bool enable) { m_ConsoleEnabled = enable; }
 private:
     typedef char (__cdecl* pfnLogWriter)(int, const char*);
     static pfnLogWriter m_pfnLogWriter;
     static bool m_Initialized;
     static bool m_OutputLogs;
+    static bool m_ConsoleEnabled;
 };
 
 #endif

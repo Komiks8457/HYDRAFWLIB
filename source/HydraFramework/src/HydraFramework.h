@@ -3,7 +3,9 @@
 #include "Pattern/Singleton.h"
 #include "CriticalSection.h"
 #include "ThreadPool.h"
-#include "NetEngine/ServerInfo.h"
+#include "ServerInfo.h"
+
+class CNetEngine;
 
 ///////////////////////////////////////////////////////////
 // HydraFramework
@@ -47,8 +49,6 @@ namespace HydraFramework
         CHydraProcess& operator=(const CHydraProcess&);
         virtual ~CHydraProcess();
 
-        static void InitTask(void *ptr);
-
         CCriticalSection m_cs;
         char m_version[25];
         char m_dllName[25];
@@ -59,9 +59,8 @@ namespace HydraFramework
         CRefDataManager* m_RefDataMgr;
         CObjManager* m_ObjMgr;
 
-        DbConnStringInfo m_dbConn;
-
-        ServerInfo m_ServerInfo;
+        sCertificationBody m_ServerInfo;
+        sDbConfigs m_dbConfig;
     };
 
     inline __declspec(naked) int NO_ENDLESS_LOOP_DUMP()

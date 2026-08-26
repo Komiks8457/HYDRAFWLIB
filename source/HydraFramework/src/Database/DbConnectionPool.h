@@ -1,6 +1,8 @@
 #pragma once
 
 #include "DbConnection.h"
+#include <vector>
+#include <string>
 
 namespace HydraFramework
 {
@@ -20,6 +22,7 @@ namespace HydraFramework
 
         // Shutdown and cleanup all connections
         void Shutdown();
+        void Shutdown_NoLock();
 
     private:
         // Internal helper to create a single connection
@@ -33,8 +36,32 @@ namespace HydraFramework
         std::vector<CDbConnection*> m_idlePool;
         CCriticalSection m_cs;
 
-    private:
+        // Non-copyable
         CDbConnectionPool(const CDbConnectionPool&);
         CDbConnectionPool& operator=(const CDbConnectionPool&);
+    };
+
+    // RAII Guard to automatically release connections and prevent leaks in consumer classes
+    class CDbConnectionGuard {
+    public:
+        explicit CDbConnectionGuard(CDbConnectionPool& pool)
+            : m_pool(pool), m_pConn(pool.GetConnection()) {}
+
+        ~CDbConnectionGuard() {
+            if (m_pConn) {
+                m_pool.ReleaseConnection(m_pConn);
+            }
+        }
+
+        CDbConnection* operator->() const { return m_pConn; }
+        CDbConnection* Get() const { return m_pConn; }
+        bool IsValid() const { return m_pConn != NULL; }
+
+    private:
+        CDbConnectionPool& m_pool;
+        CDbConnection* m_pConn;
+
+        CDbConnectionGuard(const CDbConnectionGuard&);
+        CDbConnectionGuard& operator=(const CDbConnectionGuard&);
     };
 }

@@ -30,6 +30,8 @@ target_link_libraries(HydraDLL
         ShardManager
 )
 
+target_compile_definitions(HydraDLL PRIVATE SERVER_BUILD)
+
 if(MSVC)
     set_target_properties(HydraDLL
             PROPERTIES

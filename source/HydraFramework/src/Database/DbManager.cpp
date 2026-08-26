@@ -39,6 +39,7 @@ namespace HydraFramework
 
         _snprintf(szConnStr, sizeof(szConnStr), connStrFormat, host.c_str(), user.c_str(), pass.c_str(), account.c_str());
         if (!m_dbPools[ACCOUNT].Initialize(szConnStr, m_dbMaxConn, m_dbMinConn)) {
+            m_dbPools[ACCOUNT].Shutdown();
             return -2;
         }
 
@@ -49,6 +50,7 @@ namespace HydraFramework
 
         _snprintf(szConnStr, sizeof(szConnStr), connStrFormat, host.c_str(), user.c_str(), pass.c_str(), shard.c_str());
         if (!m_dbPools[SHARD].Initialize(szConnStr, m_dbMaxConn, m_dbMinConn)) {
+            m_dbPools[SHARD].Shutdown();
             return -4;
         }
 
@@ -59,6 +61,7 @@ namespace HydraFramework
 
         _snprintf(szConnStr, sizeof(szConnStr), connStrFormat, host.c_str(), user.c_str(), pass.c_str(), log.c_str());
         if (!m_dbPools[LOG].Initialize(szConnStr, m_dbMaxConn, m_dbMinConn)) {
+            m_dbPools[LOG].Shutdown();
             return -6;
         }
 
@@ -70,32 +73,34 @@ namespace HydraFramework
         return TRUE;
     }
 
-    int CDbManager::InitDB(DbConnStringInfo* dbInfo)
+    int CDbManager::InitDB(const sDbConfigs& dbInfo)
     {
-        if (dbInfo == NULL)
-            return -999;
+        if (dbInfo.ACCOUNT.length() > 0) {
+            if (m_dbPools[ACCOUNT].Initialize(dbInfo.ACCOUNT, m_dbMaxConn, m_dbMinConn)) {
+                m_dbInstancePool[ACCOUNT].Initialize(m_dbPools[ACCOUNT].GetConnection());
+            } else {
+                m_dbPools[ACCOUNT].Shutdown();
+                return -2;
+            }
+        }
 
-        if (dbInfo->ACCOUNT == NULL)
-            return -1;
+        if (dbInfo.SHARD.length() > 0) {
+            if (m_dbPools[SHARD].Initialize(dbInfo.SHARD, m_dbMaxConn, m_dbMinConn)) {
+                m_dbInstancePool[SHARD].Initialize(m_dbPools[SHARD].GetConnection());
+            } else {
+                m_dbPools[SHARD].Shutdown();
+                return -4;
+            }
+        }
 
-        if (!m_dbPools[ACCOUNT].Initialize(dbInfo->ACCOUNT, m_dbMaxConn, m_dbMinConn))
-            return -2;
-
-        if (dbInfo->SHARD == NULL)
-            return -3;
-
-        if (!m_dbPools[SHARD].Initialize(dbInfo->SHARD, m_dbMaxConn, m_dbMinConn))
-            return -4;
-
-        if (dbInfo->LOG == NULL)
-            return -5;
-
-        if (!m_dbPools[LOG].Initialize(dbInfo->LOG, m_dbMaxConn, m_dbMinConn))
-            return -6;
-
-        m_dbInstancePool[ACCOUNT].Initialize(m_dbPools[ACCOUNT].GetConnection());
-        m_dbInstancePool[SHARD].Initialize(m_dbPools[SHARD].GetConnection());
-        m_dbInstancePool[LOG].Initialize(m_dbPools[LOG].GetConnection());
+        if (dbInfo.LOG.length() > 0) {
+            if (m_dbPools[LOG].Initialize(dbInfo.LOG, m_dbMaxConn, m_dbMinConn)) {
+                m_dbInstancePool[LOG].Initialize(m_dbPools[LOG].GetConnection());
+            } else {
+                m_dbPools[LOG].Shutdown();
+                return -6;
+            }
+        }
 
         m_IsDbConnected = true;
         return TRUE;
@@ -123,13 +128,15 @@ namespace HydraFramework
     {
         ACS_SCOPED_LOCK(m_cs);
 
-        char format[8192];
+        char format[1024];
         va_list args;
         va_start(args, query);
-        _vsnprintf(format, 8191, query, args);
+        _vsnprintf(format, sizeof(format) - 1, query, args);
+        format[sizeof(format) - 1] = '\0';
         va_end(args);
 
-        if (!m_dbInstancePool[type].TryExecNonQuery(format))
+        // FIX: Pass format as a literal/raw string parameter to avoid double-formatting crash
+        if (!m_dbInstancePool[type].TryExecNonQuery("%s", format))
             PutLog(FATAL, "Failed to execute: %s", format);
     }
 }

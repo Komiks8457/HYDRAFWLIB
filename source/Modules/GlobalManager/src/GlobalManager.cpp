@@ -6,6 +6,7 @@
 #include "Classes/MainProcess.h"
 #include "Logger/Logger.h"
 #include "NetEngine/NetEngine.h"
+#include "../../../HydraFramework/src/ServerInfo.h"
 
 GlobalManager::CGlobalManager* g_pGlobalManager = NULL;
 
@@ -82,6 +83,12 @@ namespace GlobalManager
         sprintf_s(newTitle, "[%d] %s", GetMyServerBodyID(), oldTitle);
         SetConsoleTitleA(newTitle);
 
+        WORD wServerID = static_cast<WORD>(GetMyServerBodyID());
+        g_pHFW->m_ServerInfo.IniDbConfig(wServerID, g_pHFW->m_dbConfig, m_DbUID, m_DbPWD);
+
+        if (!g_pHFW->InitDbMgr(5, 10))
+            return FALSE;
+
         ShowWindow(GetConsoleWindow(), SW_FORCEMINIMIZE);
 
         return reinterpret_thiscall(0x01674DF0, BOOL, this);
@@ -129,38 +136,21 @@ namespace GlobalManager
             return FALSE;
         }
 
-        bool foundAny = false;
+        std::vector<WORD> serverBodyList = g_pHFW->m_ServerInfo.GetServerBodyIDByModuleName(pName);
 
-        ServerInfo::iterator it = g_pHFW->m_ServerInfo.begin();
-        ServerInfo::iterator endIt = g_pHFW->m_ServerInfo.end();
-
-        for (; it != endIt; ++it)
-        {
-            // Iterate through the ServerBody map inside sServerInfo
-            ServerBody::iterator bodyIt = it->second.ServerBodyMap.begin();
-            ServerBody::iterator bodyEnd = it->second.ServerBodyMap.end();
-
-            for (; bodyIt != bodyEnd; ++bodyIt)
-            {
-                if (bodyIt->second.Name != pName)
-                    continue;
-
-                int bodyID = static_cast<int>(bodyIt->second.ID);
-
-                if (!reinterpret_stdcall(0x0173C4F0, char, bodyID, pMsg))
-                {
-                    PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", bodyID, pMsg->GetMsgID());
-                    return FALSE;
-                }
-
-                foundAny = true;
-            }
+        if (serverBodyList.empty()) {
+            PutLog(FATAL, "%s(): pName(%s) not found", __FUNCTION__, pName);
+            return FALSE;
         }
 
-        if (!foundAny)
+        for (std::vector<WORD>::const_iterator it = serverBodyList.begin(); it != serverBodyList.end(); ++it)
         {
-            PutLog(FATAL, "Unknown module %s", pName);
-            return FALSE;
+            int serverBodyID = static_cast<int>(*it);
+            if (!reinterpret_stdcall(0x0173C4F0, char, serverBodyID, pMsg))
+            {
+                PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", serverBodyID, pMsg->GetMsgID());
+                return FALSE;
+            }
         }
 
         return TRUE;

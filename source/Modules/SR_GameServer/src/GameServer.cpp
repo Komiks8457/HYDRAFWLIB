@@ -99,47 +99,8 @@ namespace GameServer
         sprintf_s(newTitle, "[%d] %s", GetMyServerBodyID(), oldTitle);
         SetConsoleTitleA(newTitle);
 
-        ServerInfo::iterator it = g_pHFW->m_ServerInfo.begin();
-        ServerInfo::iterator endIt = g_pHFW->m_ServerInfo.end();
-
-        for (; it != endIt; ++it)
-        {
-            // Access ServerBody map inside sServerInfo to check the name
-            ServerBody::iterator bodyIt = it->second.ServerBodyMap.begin();
-            if (bodyIt == it->second.ServerBodyMap.end() || bodyIt->second.Name != "SR_ShardManager")
-                continue;
-
-            WORD divisionID = bodyIt->second.DivisionID;
-            WORD shardID = bodyIt->second.ShardID;
-
-            // Access DivisionInfo map nested inside sServerInfo
-            Division::iterator divIt = it->second.DivisionMap.find(divisionID);
-            if (divIt != it->second.DivisionMap.end())
-            {
-                stdext::replacesqlinfo(divIt->second.DbConfigAccount,
-                    DbUID().c_str(),
-                    DbPWD().c_str());
-
-                g_pHFW->m_dbConn.ACCOUNT = divIt->second.DbConfigAccount.c_str();
-            }
-
-            // Access ShardInfo map nested inside sServerInfo
-            Shard::iterator shardIt = it->second.ShardMap.find(shardID);
-            if (shardIt != it->second.ShardMap.end())
-            {
-                stdext::replacesqlinfo(shardIt->second.DbConfigShard,
-                    DbUID().c_str(),
-                    DbPWD().c_str());
-
-                g_pHFW->m_dbConn.SHARD = shardIt->second.DbConfigShard.c_str();
-
-                stdext::replacesqlinfo(shardIt->second.DbConfigLog,
-                    DbUID().c_str(),
-                    DbPWD().c_str());
-
-                g_pHFW->m_dbConn.LOG = shardIt->second.DbConfigLog.c_str();
-            }
-        }
+        WORD wServerID = static_cast<WORD>(GetMyServerBodyID());
+        g_pHFW->m_ServerInfo.IniDbConfig(wServerID, g_pHFW->m_dbConfig, m_DbUID, m_DbPWD);
 
         if (!g_pHFW->InitDbMgr(5, 10))
             return FALSE;
@@ -191,38 +152,21 @@ namespace GameServer
             return FALSE;
         }
 
-        bool foundAny = false;
+        std::vector<WORD> serverBodyList = g_pHFW->m_ServerInfo.GetServerBodyIDByModuleName(pName);
 
-        ServerInfo::iterator it = g_pHFW->m_ServerInfo.begin();
-        ServerInfo::iterator endIt = g_pHFW->m_ServerInfo.end();
-
-        for (; it != endIt; ++it)
-        {
-            // Iterate through the ServerBody map inside sServerInfo
-            ServerBody::iterator bodyIt = it->second.ServerBodyMap.begin();
-            ServerBody::iterator bodyEnd = it->second.ServerBodyMap.end();
-
-            for (; bodyIt != bodyEnd; ++bodyIt)
-            {
-                if (bodyIt->second.Name != pName)
-                    continue;
-
-                int bodyID = static_cast<int>(bodyIt->second.ID);
-
-                if (!reinterpret_stdcall(0x00BE0650, char, bodyID, pMsg))
-                {
-                    PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", bodyID, pMsg->GetMsgID());
-                    return FALSE;
-                }
-
-                foundAny = true;
-            }
+        if (serverBodyList.empty()) {
+            PutLog(FATAL, "%s(): pName(%s) not found", __FUNCTION__, pName);
+            return FALSE;
         }
 
-        if (!foundAny)
+        for (std::vector<WORD>::const_iterator it = serverBodyList.begin(); it != serverBodyList.end(); ++it)
         {
-            PutLog(FATAL, "Unknown module %s", pName);
-            return FALSE;
+            int serverBodyID = static_cast<int>(*it);
+            if (!reinterpret_stdcall(0x00BE0650, char, serverBodyID, pMsg))
+            {
+                PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", serverBodyID, pMsg->GetMsgID());
+                return FALSE;
+            }
         }
 
         return TRUE;
