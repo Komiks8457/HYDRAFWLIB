@@ -11,7 +11,7 @@
 
 enum E_LOG_MSG_TYPE
 {
-    NORMAL      = 0x0000000,
+    NOTIFY      = 0x0000000,
     WARNING     = 0x1000000,
     FATAL       = 0x2000001,
     PERFORMANCE = 0x3000001

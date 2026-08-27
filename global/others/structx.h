@@ -229,3 +229,79 @@ struct sVanguard
     sVanguard() : INI(L""), DLL(L"")
     {}
 };
+
+struct sMacAddress
+{
+    BYTE b1;
+    BYTE b2;
+    BYTE b3;
+    BYTE b4;
+    BYTE b5;
+    BYTE b6;
+
+    std::string ToString() const
+    {
+        char szBuffer[18];
+        sprintf_s(szBuffer, sizeof(szBuffer), "%02X:%02X:%02X:%02X:%02X:%02X", b1, b2, b3, b4, b5, b6);
+        return std::string(szBuffer);
+    }
+
+    sMacAddress(BYTE p1 = 0, BYTE p2 = 0, BYTE p3 = 0, BYTE p4 = 0, BYTE p5 = 0, BYTE p6 = 0)
+        : b1(p1), b2(p2), b3(p3), b4(p4), b5(p5), b6(p6)
+    {}
+
+    sMacAddress(const BYTE (&byte)[6])
+    {
+        b1 = byte[0]; b2 = byte[1]; b3 = byte[2]; b4 = byte[3]; b5 = byte[4]; b6 = byte[5];
+    }
+};
+typedef sMacAddress MacAddress;
+
+namespace E_MODULE
+{
+    enum Type
+    {
+        AgentServer,
+        DownloadServer,
+        FarmManager,
+        GatewayServer,
+        GlobalManager,
+        MachineManager,
+        SR_GameServer,
+        SR_ShardManager,
+        UNKNOWN
+    };
+
+    inline const char* GetModuleName(Type type)
+    {
+        switch (type)
+        {
+            case AgentServer:      return "AgentServer";
+            case DownloadServer:   return "DownloadServer";
+            case FarmManager:      return "FarmManager";
+            case GatewayServer:    return "GatewayServer";
+            case GlobalManager:    return "GlobalManager";
+            case MachineManager:   return "MachineManager";
+            case SR_GameServer:    return "SR_GameServer";
+            case SR_ShardManager:  return "SR_ShardManager";
+            default:               return "UNKNOWN";
+        }
+    }
+
+    inline Type GetModuleType(const char* name)
+    {
+        if (name == 0)
+            return UNKNOWN;
+
+        if (std::strcmp(name, "AgentServer") == 0)     return AgentServer;
+        if (std::strcmp(name, "DownloadServer") == 0)  return DownloadServer;
+        if (std::strcmp(name, "FarmManager") == 0)     return FarmManager;
+        if (std::strcmp(name, "GatewayServer") == 0)   return GatewayServer;
+        if (std::strcmp(name, "GlobalManager") == 0)   return GlobalManager;
+        if (std::strcmp(name, "MachineManager") == 0)  return MachineManager;
+        if (std::strcmp(name, "SR_GameServer") == 0)   return SR_GameServer;
+        if (std::strcmp(name, "SR_ShardManager") == 0) return SR_ShardManager;
+
+        return UNKNOWN;
+    }
+};

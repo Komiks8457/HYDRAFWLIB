@@ -8,27 +8,25 @@ CNetEngine* g_pNetEngine = NULL;
 
 CNetEngine::vfTableMap CNetEngine::m_vftableMap;
 
-bool CNetEngine::Initialize(CNetEngine* pNetEngine)
+bool CNetEngine::Initialize(void* ptr)
 {
-    if (pNetEngine == NULL)
+    if (ptr == NULL || g_pNetEngine)
         return false;
 
-    if (g_pNetEngine)
-        return true;
-
-    g_pNetEngine = pNetEngine;
+    g_pNetEngine = reinterpret_cast<CNetEngine*>(ptr);
 
     for (int i = 0; i <= 43; ++i) {
         DWORD vftFunc = MEMUTIL_VFTABLE_GET_FUNC(*(uintptr_t*)g_pNetEngine, i);
         m_vftableMap[i] = vftFunc;
     }
 
+    PutLog(WARNING, "CNetEngine Hook Initialized!");
     return true;
 }
 
-CMsg* CNetEngine::NewMsg_IMPL(WORD wMsgID, bool IsEncrypted)
+CMsg* CNetEngine::NewMsg(WORD wMsgID, bool IsEncrypted)
 {
-    CMsg* pMsg = reinterpret_stdcall(m_vftableMap[18], CMsg*, IsEncrypted);
+    CMsg* pMsg = reinterpret_stdcall(m_vftableMap[18], CMsg*, this, IsEncrypted);
 
     if (pMsg == NULL) {
         Logger::error("%s(...), pMsg is NULL", __FUNCTION__);
@@ -40,7 +38,7 @@ CMsg* CNetEngine::NewMsg_IMPL(WORD wMsgID, bool IsEncrypted)
     return pMsg;
 }
 
-CMsg* CNetEngine::NewMsgFrom_IMPL(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted)
+CMsg* CNetEngine::NewMsgFrom(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted)
 {
     CMsg* pMsg = reinterpret_stdcall(m_vftableMap[19], CMsg*, this, szFile, nLine, szFnName, IsEncrypted);
 
@@ -53,7 +51,7 @@ CMsg* CNetEngine::NewMsgFrom_IMPL(WORD wMsgID, const char* szFile, BOOL nLine, c
     return pMsg;
 }
 
-void CNetEngine::DelMsg_IMPL(CMsg* pMsg)
+void CNetEngine::DelMsg(CMsg* pMsg)
 {
     if (!pMsg) return;
 
@@ -64,17 +62,18 @@ void CNetEngine::DelMsg_IMPL(CMsg* pMsg)
     DelMsg(pMsg);
 }
 
-IBSNet::NERR CNetEngine::SendMsg_IMPL(const DWORD dwSessionID, CMsg* pMsg)
+IBSNet::NERR CNetEngine::SendMsg(const DWORD dwSessionID, CMsg* pMsg)
 {
     return reinterpret_stdcall(m_vftableMap[22], IBSNet::NERR, this, dwSessionID, pMsg);
 }
 
-BOOL CNetEngine::GetMacAddress_IMPL(DWORD dwSession, BYTE* pAddress)
+MacAddress CNetEngine::GetMacAddress(DWORD dwSession) const
 {
-    return reinterpret_stdcall(m_vftableMap[36], BOOL, this, dwSession, pAddress);
-}
+    BYTE mac[6] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xF0, 0x0D };
 
-BOOL CNetEngine::DisplayVersion_IMPL()
-{
-    return reinterpret_stdcall(m_vftableMap[38], BOOL, this);
+    if (!reinterpret_stdcall(m_vftableMap[36], BOOL, this, dwSession, mac)) {
+        PutLog(FATAL, "%s failed.", __FUNCTIONP__);
+    }
+
+    return MacAddress(mac);
 }

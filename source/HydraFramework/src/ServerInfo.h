@@ -3,8 +3,8 @@
 #ifndef SERVERINFO_H
 #define SERVERINFO_H
 
-#include "AppLogger.h"
 #include "pch.h"
+#include "AppLogger.h"
 
 struct sServerBody
 {
@@ -138,6 +138,11 @@ struct sCertificationBody
     ServerMachine ServerMachineMap;
     ServerCord ServerCordMap;
     Shard ShardMap;
+
+    std::vector<WORD> GetServerBodyIDByModuleName(E_MODULE::Type Type) const
+    {
+        return GetServerBodyIDByModuleName(GetModuleName(Type));
+    }
 
     std::vector<WORD> GetServerBodyIDByModuleName(const std::string& moduleName) const
     {

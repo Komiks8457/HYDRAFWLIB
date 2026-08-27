@@ -3,22 +3,34 @@
 #include "Msg.h"
 
 #define NEWMSG(MsgID, Encrypt) \
-    g_pNetEngine->NewMsg_IMPL(MsgID, Encrypt)
+    g_pNetEngine->NewMsg(MsgID, Encrypt)
 
 #define NEWMSGFROM(MsgID, File, Line, FuncName, Encrypt) \
     g_pNetEngine->NewMsgFrom_IMPL(MsgID, File, Line, FuncName, Encrypt)
 
 #define DELMSG(pMsg) \
-    g_pNetEngine->DelMsg_IMPL(pMsg)
+    g_pNetEngine->DelMsg(pMsg)
 
 #define SENDMSG(SessionID, pMsg) \
-    g_pNetEngine->SendMsg_IMPL(SessionID, pMsg)
+    g_pNetEngine->SendMsg(SessionID, pMsg)
 
-struct IUnknownInterface
-{};
+#define GETMAC(SessionID) \
+    g_pNetEngine->GetMacAddress(SessionID)
 
-struct IBSNet : public IUnknownInterface
+struct __declspec(novtable) IUnknownInterface
 {
+    virtual HRESULT	__stdcall QueryInterface(REFIID riid, LPVOID FAR * ppvObj) = 0;
+    virtual ULONG	__stdcall AddRef()  = 0;
+    virtual ULONG	__stdcall Release() = 0;
+};
+
+struct __declspec(novtable) IBSNet : public IUnknownInterface
+{
+    // IUnknown methods
+    virtual HRESULT	__stdcall QueryInterface(REFIID riid, LPVOID FAR * ppvObj) = 0;
+    virtual ULONG	__stdcall AddRef()  = 0;
+    virtual ULONG	__stdcall Release() = 0;
+
     enum NERR
     {
         NERR_PEER_DOESNT_RESPONSE = 32789,
@@ -42,7 +54,7 @@ struct IBSNet : public IUnknownInterface
         NERR_SESSION_LOST = 32771,
         NERR_UNKNOWN = 32770,
         NERR_TIMEOUT = 32769,
-        NERR_OK = 0,
+        NERR_GOOD = 0,
     };
 };
 
@@ -51,21 +63,20 @@ struct NETENGINE_CONFIG
 
 class CNetEngine : public IBSNet {
 public:
-    static bool Initialize(CNetEngine* pNetEngine);
-    CMsg* NewMsg_IMPL(WORD wMsgID, bool IsEncrypted);
-    CMsg* NewMsgFrom_IMPL(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted);
-    void  DelMsg_IMPL(CMsg* pMsg);
-    NERR  SendMsg_IMPL(DWORD dwSessionID, CMsg *pMsg);
-
-    BOOL  GetMacAddress_IMPL(DWORD dwSession, BYTE *pAddress);
-    BOOL  DisplayVersion_IMPL();
+    static bool     Initialize(void* ptr);
+    CMsg*           NewMsg(WORD wMsgID, bool IsEncrypted);
+    CMsg*           NewMsgFrom(WORD wMsgID, const char* szFile, BOOL nLine, const char* szFnName, bool IsEncrypted);
+    void            DelMsg(CMsg* pMsg);
+    NERR            SendMsg(DWORD dwSessionID, CMsg *pMsg);
+    MacAddress      GetMacAddress(DWORD dwSession) const;
 
 private:
-    virtual ~CNetEngine() = 0;
-    virtual HRESULT __stdcall QueryInterface(const IID& iid, void** ppv) = 0;
-    virtual ULONG   __stdcall AddRef() = 0;
-    virtual ULONG   __stdcall Release() = 0;
-    virtual BOOL    __stdcall Create(NETENGINE_CONFIG &config) = 0;
+    virtual ~CNetEngine();
+    virtual HRESULT	__stdcall QueryInterface(REFIID riid, LPVOID FAR * ppvObj) = 0;
+    virtual ULONG	__stdcall AddRef()  = 0;
+    virtual ULONG	__stdcall Release() = 0;
+
+    /*virtual BOOL    __stdcall Create(NETENGINE_CONFIG &config) = 0;
     virtual BOOL    __stdcall DummyFunc_04(BOOL a2, BOOL a3, BOOL a4, BOOL a5) = 0;
     virtual BOOL    __stdcall Connect(LPCWSTR lpszAddrConnect, WORD nPort, LPCWSTR lpszAddrBind, DWORD dwTaskToBind, BOOL bKeepAlive) = 0;
     virtual BOOL    __stdcall DummyFunc_06() = 0;
@@ -105,8 +116,7 @@ private:
     virtual BOOL    __stdcall DummyFunc_40() = 0;
     virtual BOOL    __stdcall DummyFunc_41() = 0;
     virtual BOOL    __stdcall DummyFunc_42() = 0;
-    virtual void    __stdcall RegisterMaxConnections(int, int) = 0;
-
+    virtual void    __stdcall RegisterMaxConnections(int, int) = 0;*/
 //--------------------------------------------------------------------
     typedef std::map<int, DWORD> vfTableMap;
     static vfTableMap m_vftableMap;

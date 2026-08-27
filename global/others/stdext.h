@@ -1,5 +1,7 @@
 #pragma once
 
+#define __FUNCTIONP__ stdext::GetFunctionName(__FUNCTION__)
+
 #define __stringa(x) stdext::_stringa(x)
 #define __stringw(x) stdext::_stringw(x)
 #define __tostra(x) stdext::tostra(x)
@@ -671,5 +673,30 @@ namespace stdext
         }
 
         return foundAny;
+    }
+
+    inline const char* GetFunctionName(const char* func)
+    {
+        // Find all occurrences of "::"
+        const char* second_last_cc = 0;
+        const char* last_cc = 0;
+        const char* p = func;
+
+        while ((p = std::strstr(p, "::")) != 0)
+        {
+            second_last_cc = last_cc;
+            last_cc = p;
+            p += 2; // Move past "::"
+        }
+
+        // If we found at least two "::" (e.g. Namespace::Class::Func),
+        // return from the one *before* the last one.
+        if (second_last_cc != 0)
+        {
+            return second_last_cc + 2; // Skip the "::" itself to start right at ClassName::FunctionName
+        }
+
+        // If there's only one or zero "::", just return the original function string
+        return func;
     }
 }

@@ -13,13 +13,13 @@ namespace MachineManager
         static void Initialize();
         BYTE GetMyServerBodyID();
         HWND GetWinHandle();
+        void SendMsgToServerBody(E_MODULE::Type Type, CMsg* pMsg);
 
     private:
         BOOL init_module();
         BOOL init_localdata();
+        BOOL check_valid_msgid(int a2, WORD wMsgID, int a4);
     };
-
-    void SendMsgToServerBody(int nTargetID, CMsg *pMsg);
 }
 
 extern MachineManager::CMachineManager *g_pMachineManager;

@@ -30,7 +30,7 @@ namespace HydraFramework
         PutLog(FATAL, "%s %s Compiled (%s)", __DATE__, __TIME__, m_version);
         PutLog(FATAL, "========================================================");
 
-        CNetEngine::Initialize(reinterpret_cast<CNetEngine*>(MEMUTIL_ADD_PTR(ptr, 0x14C)));
+        CNetEngine::Initialize(reinterpret_cast<void*>(MEMUTIL_ADD_PTR(ptr, 0x14C)));
     }
 
     bool CHydraProcess::InitDbMgr(short min, short max)
@@ -42,48 +42,48 @@ namespace HydraFramework
         int dbConnect = m_DbMgr->InitDB(m_dbConfig);
 
         if (dbConnect < 0) {
-            PutLog(FATAL, "%s() Failed (error: %d)", __FUNCTION__, dbConnect);
+            PutLog(FATAL, "%s() Failed (error: %d)", __FUNCTIONP__, dbConnect);
             return false;
         }
 
-        PutLog(FATAL, "%s() OK!", __FUNCTION__);
+        PutLog(WARNING, "Successfully DB Initialized! (HydraFWLib)");
         return true;
     }
 
     void CHydraProcess::InitRefDataMgr()
     {
         if (m_DbMgr == NULL) {
-            PutLog(FATAL, "%s, m_DbMgr is NULL", __FUNCTION__);
+            PutLog(FATAL, "%s, m_DbMgr is NULL", __FUNCTIONP__);
             return;
         }
 
         if (!m_DbMgr->IsDbConnected()) {
-            PutLog(FATAL, "%s, m_DbMgr is initialized but not connected", __FUNCTION__);
+            PutLog(FATAL, "%s, m_DbMgr is initialized but not connected", __FUNCTIONP__);
             return;
         }
 
         m_RefDataMgr = new CRefDataManager();
         m_RefDataMgr->m_pDbMgr = m_DbMgr;
 
-        PutLog(FATAL, "%s() OK!", __FUNCTION__);
+        PutLog(FATAL, "%s() OK!", __FUNCTIONP__);
     }
 
     void CHydraProcess::InitObjectMgr()
     {
         if (m_DbMgr == NULL) {
-            PutLog(FATAL, "%s, m_DbMgr is NULL", __FUNCTION__);
+            PutLog(FATAL, "%s, m_DbMgr is NULL", __FUNCTIONP__);
             return;
         }
 
         if (!m_DbMgr->IsDbConnected()) {
-            PutLog(FATAL, "%s, m_DbMgr is initialized but not connected", __FUNCTION__);
+            PutLog(FATAL, "%s, m_DbMgr is initialized but not connected", __FUNCTIONP__);
             return;
         }
 
         m_ObjMgr = new CObjManager();
         m_ObjMgr->m_pDbMgr = m_DbMgr;
 
-        PutLog(FATAL, "%s() OK!", __FUNCTION__);
+        PutLog(FATAL, "%s() OK!", __FUNCTIONP__);
     }
 
     CHydraProcess::~CHydraProcess()

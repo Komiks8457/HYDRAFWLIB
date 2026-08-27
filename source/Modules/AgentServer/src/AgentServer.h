@@ -13,7 +13,7 @@ namespace AgentServer
         static void Initialize();
         BYTE GetMyServerBodyID();
         HWND GetWinHandle();
-        BYTE SendMsgToServerBody(const char *pName, CMsg *pMsg);
+        void SendMsgToServerBody(E_MODULE::Type Type, CMsg* pMsg);
 
     private:
         BOOL init_module();

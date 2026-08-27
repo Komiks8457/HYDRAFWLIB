@@ -4,7 +4,6 @@
 #include "AppLogger.h"
 #include "NetEngine/NetEngine.h"
 #include "GlobalManager.h"
-#include "../../../../HydraFramework/src/ServerInfo.h"
 
 namespace GlobalManager
 {
@@ -15,7 +14,7 @@ namespace GlobalManager
         if (!pMsg)
             return;
 
-        if (pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 64)
+        if (pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 1024)
         {
             CMainProcess* pMainProcess = reinterpret_cast<CMainProcess*>(pThis);
             pMainProcess->CustomMsg(pMsg, 0, 0, NULL);
@@ -67,7 +66,7 @@ namespace GlobalManager
 
     BOOL CMainProcess::HandleMsg(CMsg *pMsg, DWORD a3, LPVOID a4, CMassiveMsg *pMassiveMsg)
     {
-        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 64)
+        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 1024)
             CustomMsg(pMsg, NULL, NULL, NULL);
 
         return reinterpret_thiscall(0x0173B810, BOOL, this, pMsg, a3, a4, pMassiveMsg);
@@ -83,7 +82,7 @@ namespace GlobalManager
 
         switch (wMsgID) {
             case MODULE_CERTIFICATION_ACK: { //0x600D
-                if (pMsg->GetMsgSize() > 64)
+                if (pMsg->GetMsgSize() > 1024)
                 {
                     BYTE listMarker = 0;
 

@@ -13,7 +13,7 @@ namespace DownloadServer
         static void Initialize();
         BOOL GetMyServerBodyID();
         HWND GetWinHandle();
-        BYTE SendMsgToServerBody(const char *pName, CMsg *pMsg);
+        void SendMsgToServerBody(E_MODULE::Type Type, CMsg* pMsg);
 
     private:
         BOOL init_module();

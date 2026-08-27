@@ -12,6 +12,9 @@ namespace MachineManager
         static void SetupHook();
 
     private:
-        uint32_t HandleMsg(CMsg *pMsg, DWORD dwOverlappedID, void *lpParam, CMassiveMsg *pMassiveMsg);
+        BOOL PrepareMsgHandlers();
+        BOOL RegisterMsgHandler(WORD wMsgID, uintptr_t fnPtr);
+        BOOL HandleMsg(CMsg *pMsg, DWORD dwOverlappedID, void *lpParam, CMassiveMsg *pMassiveMsg);
+        BOOL CustomMsg(CMsg *pMsg, DWORD, LPVOID, CMassiveMsg*);
     };
 }

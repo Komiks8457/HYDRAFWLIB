@@ -27,7 +27,7 @@ namespace AgentServer
 
     BOOL CMainProcess::HandleMsg(CMsg *pMsg, DWORD a3, LPVOID a4, CMassiveMsg *pMassiveMsg)
     {
-        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 64)
+        if (pMsg && pMsg->GetMsgID() == MODULE_CERTIFICATION_ACK && pMsg->GetMsgSize() > 1024)
             CustomMsg(pMsg, NULL, NULL, NULL);
 
         return reinterpret_thiscall(0x00428830, BOOL, this, pMsg, a3, a4, pMassiveMsg);
@@ -43,7 +43,7 @@ namespace AgentServer
 
         switch (wMsgID) {
             case MODULE_CERTIFICATION_ACK: { //0x600D
-                if (pMsg->GetMsgSize() > 64)
+                if (pMsg->GetMsgSize() > 1024)
                 {
                     BYTE listMarker = 0;
 

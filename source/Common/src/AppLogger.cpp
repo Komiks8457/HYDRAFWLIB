@@ -28,7 +28,7 @@ char CAppLogger::WriteLog(E_LOG_MSG_TYPE Type, const char* format, ...)
     if (m_ConsoleEnabled && m_OutputLogs)
     {
         switch (Type) {
-            case NORMAL:
+            case NOTIFY:
                 Logger::info(logmsg);
             break;
             case FATAL:
