@@ -11,7 +11,7 @@ namespace MachineManager
     class CMachineManager {
     public:
         static void Initialize();
-        BYTE GetMyServerBodyID();
+        WORD GetMyServerBodyID();
         HWND GetWinHandle();
         void SendMsgToServerBody(E_MODULE::Type Type, CMsg* pMsg);
 

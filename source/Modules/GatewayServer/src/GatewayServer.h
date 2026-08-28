@@ -11,7 +11,7 @@ namespace GatewayServer
     class CGatewayServer {
     public:
         static void Initialize();
-        BOOL GetMyServerBodyID();
+        WORD GetMyServerBodyID();
         HWND GetWinHandle();
         void SendMsgToServerBody(E_MODULE::Type Type, CMsg* pMsg);
 

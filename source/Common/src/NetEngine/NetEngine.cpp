@@ -58,8 +58,6 @@ void CNetEngine::DelMsg(CMsg* pMsg)
     pMsg->ResetPos();
 
     reinterpret_stdcall(m_vftableMap[20], void, this, pMsg);
-
-    DelMsg(pMsg);
 }
 
 IBSNet::NERR CNetEngine::SendMsg(const DWORD dwSessionID, CMsg* pMsg)

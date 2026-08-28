@@ -272,7 +272,7 @@ namespace GlobalManager
                 break;
             }
             case SERVER_ONLY_REQ: {
-                // TODO
+                pMsg->PrintDumpData(__FUNCTIONP__);
                 break;
             }
             case SERVER_ONLY_ACK: {

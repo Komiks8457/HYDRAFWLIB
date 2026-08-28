@@ -58,9 +58,6 @@ struct __declspec(novtable) IBSNet : public IUnknownInterface
     };
 };
 
-struct NETENGINE_CONFIG
-{};
-
 class CNetEngine : public IBSNet {
 public:
     static bool     Initialize(void* ptr);

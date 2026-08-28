@@ -61,20 +61,20 @@ namespace ShardManager
         MEMUTIL_VFTABLE_HOOK(0x00B560EC,  1, &CShardManager::init_module);
         MEMUTIL_VFTABLE_HOOK(0x00B560EC, 11, &CShardManager::init_localdata);
 
-        // Static Patches
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EB1B + 1, (BYTE)0xC8); //MOB_THIEF
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EC2F + 2, (BYTE)0xC7); //MOB_THIEF
+        // SHARD static patches for skills & mobs levels greater than 140
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EB1B + 1, 0xC8); //MOB_THIEF
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EC2F + 2, 0xC7); //MOB_THIEF
 
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0075ED3B + 1, (BYTE)0xC8); //MOB_HUNTER
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EE4F + 2, (BYTE)0xC7); //MOB_HUNTER
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0075ED3B + 1, 0xC8); //MOB_HUNTER
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0075EE4F + 2, 0xC7); //MOB_HUNTER
 
-        MEMUTIL_WRITE_VALUE(BYTE, 0x00759D4F + 1, (BYTE)0xC8); //UNK
-        MEMUTIL_WRITE_VALUE(BYTE, 0x00759E75 + 2, (BYTE)0xC8); //UNK
+        MEMUTIL_WRITE_VALUE(BYTE, 0x00759D4F + 1, 0xC8); //UNK SKILL I THINK
+        MEMUTIL_WRITE_VALUE(BYTE, 0x00759E75 + 2, 0xC8); //UNK SKILL I THINK
 
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0072E217 + 1, (BYTE)0xC8); //UNK
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0072E217 + 1, 0xC8); //UNK IDK REALLY
 
-        MEMUTIL_WRITE_VALUE(BYTE, 0x0074201C + 1, (BYTE)0xC8); //MERCENARY
-        MEMUTIL_WRITE_VALUE(BYTE, 0x007421EF + 1, (BYTE)0xC8); //SIEGEGUARD
+        MEMUTIL_WRITE_VALUE(BYTE, 0x0074201C + 1, 0xC8); //MERCENARY
+        MEMUTIL_WRITE_VALUE(BYTE, 0x007421EF + 1, 0xC8); //SIEGEGUARD
     }
 
     BOOL CShardManager::init_module()
@@ -115,9 +115,9 @@ namespace ShardManager
         return reinterpret_thiscall(0x00A0C300, BOOL, this, a2, wMsgID, a4);
     }
 
-    BYTE CShardManager::GetMyServerBodyID()
+    WORD CShardManager::GetMyServerBodyID()
     {
-        return *(BYTE*)MEMUTIL_ADD_PTR(*reinterpret_cast<uintptr_t*>(0x00D193F0), 0);
+        return *(WORD*)MEMUTIL_ADD_PTR(*reinterpret_cast<uintptr_t*>(0x00D193F0), 0);
     }
 
     HWND CShardManager::GetWinHandle()
@@ -129,23 +129,6 @@ namespace ShardManager
     {
         if (!pMsg) return;
 
-        E_MODULE::Type allowed[] = { E_MODULE::FarmManager, E_MODULE::AgentServer, E_MODULE::SR_GameServer };
-
-        bool bAllowed = false;
-        for (size_t i = 0; i < sizeof(allowed) / sizeof(allowed[0]); ++i)
-        {
-            if (Type == allowed[i])
-            {
-                bAllowed = true;
-                break;
-            }
-        }
-
-        if (!bAllowed) {
-            PutLog(FATAL, "%s(): pName(%s) not allowed", __FUNCTIONP__, E_MODULE::GetModuleName(Type));
-            return;
-        }
-
         std::vector<WORD> serverBodyList = g_pHFW->m_ServerInfo.GetServerBodyIDByModuleName(Type);
 
         if (serverBodyList.empty()) {
@@ -153,39 +136,10 @@ namespace ShardManager
             return;
         }
 
-        WORD myServerBodyID = static_cast<WORD>(GetMyServerBodyID());
-        BYTE myDivisionID = g_pHFW->m_ServerInfo.ServerBodyMap[myServerBodyID].DivisionID;
-        BYTE myFarmID = g_pHFW->m_ServerInfo.ServerBodyMap[myServerBodyID].FarmID;
-
         for (std::vector<WORD>::const_iterator it = serverBodyList.begin(); it != serverBodyList.end(); ++it)
         {
             WORD serverBodyID = *it;
-
-            BYTE divisionID = g_pHFW->m_ServerInfo.ServerBodyMap[serverBodyID].DivisionID;
-            BYTE farmID = g_pHFW->m_ServerInfo.ServerBodyMap[serverBodyID].FarmID;
-
-            // check if same division and farm
-            if (myDivisionID != divisionID || myFarmID != farmID)
-                continue;
-
-            // check if it does have actual cords connected between us and the target
-            bool bHasCord = false;
-            for (ServerCord::const_iterator cordIt = g_pHFW->m_ServerInfo.ServerCordMap.begin();
-                 cordIt != g_pHFW->m_ServerInfo.ServerCordMap.end(); ++cordIt)
-            {
-                const sServerCord& cord = cordIt->second;
-                if ((cord.OutletID == myServerBodyID && cord.InletID == serverBodyID) ||
-                    (cord.OutletID == serverBodyID && cord.InletID == myServerBodyID))
-                {
-                    bHasCord = true;
-                    break;
-                }
-            }
-
-            if (!bHasCord)
-                continue;
-
-            if (!reinterpret_stdcall(0x009EC950, char, (int)serverBodyID, pMsg))
+            if (!reinterpret_stdcall(0x009EC950, char, static_cast<int>(serverBodyID), pMsg))
                 PutLog(FATAL, "Failed to send msg to body ID(%d), MsgID(0x%x)", serverBodyID, pMsg->GetMsgID());
         }
     }
